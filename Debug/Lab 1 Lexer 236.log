@@ -1,12 +1,10 @@
-﻿Build started 10/3/2018 6:48:52 AM.
+﻿Build started 10/3/2018 2:06:36 PM.
      1>Project "C:\Users\orion\source\repos\Lab 1 Lexer 236\Lab 1 Lexer 236\Lab 1 Lexer 236.vcxproj" on node 2 (Build target(s)).
      1>InitializeBuildStatus:
          Creating "Debug\Lab 1 Lexer 236.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.11.25503\bin\HostX86\x86\CL.exe /c /ZI /nologo /W3 /WX- /diagnostics:classic /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc141.pdb" /Gd /TP /analyze- /errorReport:prompt main2.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.11.25503\bin\HostX86\x86\CL.exe /c /ZI /nologo /W3 /WX /diagnostics:classic /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc141.pdb" /Gd /TP /analyze- /errorReport:prompt main2.cpp
          main2.cpp
-     1>c:\users\orion\source\repos\lab 1 lexer 236\lab 1 lexer 236\main2.cpp(371): warning C4018: '<': signed/unsigned mismatch
-     1>c:\users\orion\source\repos\lab 1 lexer 236\lab 1 lexer 236\main2.cpp(519): warning C4101: 'e': unreferenced local variable
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.11.25503\bin\HostX86\x86\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\orion\source\repos\Lab 1 Lexer 236\Debug\Lab 1 Lexer 236.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG:FASTLINK /PDB:"C:\Users\orion\source\repos\Lab 1 Lexer 236\Debug\Lab 1 Lexer 236.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\orion\source\repos\Lab 1 Lexer 236\Debug\Lab 1 Lexer 236.lib" /MACHINE:X86 Debug\Lexer.obj
          Debug\main2.obj

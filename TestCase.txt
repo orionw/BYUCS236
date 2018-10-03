@@ -13,11 +13,11 @@ Facts: #comment
   snap('333','opy').
 
 Rules:
-  HasSameAddress(X,Y) :- snap((A+B),X,B,C),snap(D,Y,B,(E+C)).
+  HasSameAddress(X,Y) :- snap((A+(C+(LastOne*Promise))),X,B,C),snap(D,Y,B,(E+C)).
   NotHasSameAddress(X,Y) :- snap(X,B,C),snap(B,(E+C)),snap(A,C).
 
 #comment
 
 Queries:
   # comment double check the 'snoopy'
-  HasSameAddress(('Snoopy'+A),(Who*Hello))?
+  HasSameAddress(('Snoopy'+(A+(Last*One))),(Who*Hello))?

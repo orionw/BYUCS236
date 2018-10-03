@@ -44,32 +44,6 @@ public:
 	string toString() {
 		return value;
 	}
-
-	/*Parameter(Lexer& lex) {
-
-
-
-		if (lex.getCurrentToken().getTokenType() == "ID") {
-
-			result = new Id(lex);
-		}
-		else if (lex.getCurrentToken().getTokenType() == "STRING") {
-			checkType(lex, "STRING");
-			value = lex.getCurrentToken().getValue();
-			lex.advanceTokens();
-		}
-		else if (lex.getCurrentToken().getTokenType() == "STRING") {
-
-			result = new Expression(lex);
-		}
-		else {
-			throw new exception(
-				"Looking for a Parameter but found ");
-		}
-	}*/
-
-
-
 };
 
 class Id : public Parameter
@@ -124,6 +98,12 @@ public:
 	Operator* op;
 	Parameter* rightParameter;
 
+	~Expression() {
+		delete leftParameter;
+		delete rightParameter;
+		delete op;
+	}
+
 	Expression(Lexer& lex) {
 		checkFor(lex, "LEFT_PAREN");
 
@@ -136,7 +116,20 @@ public:
 	}
 
 	string toString() {
-		return "(" + leftParameter->toString() + op->toString() + rightParameter->toString() + ")";
+		Expression* left = (Expression*) leftParameter;
+		Expression* right = (Expression*) rightParameter;
+		if (leftParameter->isExp) {
+			if (rightParameter->isExp) {
+				return "(" + left->toString() + op->toString() + right->toString() + ")";
+			}
+			return "(" + left->toString() + op->toString() + rightParameter->toString() + ")";
+		}
+		else if (rightParameter->isExp) {
+			return "(" + leftParameter->toString() + op->toString() + right->toString() + ")";
+		}
+		else {
+			return "(" + leftParameter->toString() + op->toString() + rightParameter->toString() + ")";
+		}
 	}
 };
 
@@ -166,7 +159,7 @@ Parameter* createParameter(Lexer& lex) {
 		result = (Parameter*) new Expression(lex);
 	}
 	else {
-		throw new exception(
+		throw new runtime_error(
 			"Looking for a Parameter but found ");
 	}
 	return result;
@@ -178,7 +171,13 @@ class HeadPredicate {
 public:
 	Id* idIs;
 	vector<Id*>* ids;
-	;
+	~HeadPredicate() {
+		delete idIs;
+		for (unsigned int i = 0; i < ids->size(); i++) {
+			delete ids->at(i);
+		}
+		delete ids;
+	}
 
 
 	HeadPredicate(Lexer& lex) {
@@ -202,6 +201,14 @@ public:
 	Id* id;
 	vector<Parameter*>* parameters;
 
+	~Predicate() {
+		delete id;
+		for (unsigned int i = 0; i < parameters->size(); i++) {
+			delete parameters->at(i);
+		}
+		delete parameters;
+	}
+
 	Predicate(Lexer& lex) {
 		id = new Id(lex);
 		checkFor(lex, "LEFT_PAREN");
@@ -221,6 +228,9 @@ public:
 class Query {
 public:
 	Predicate* firstPart;
+	~Query() {
+		delete firstPart;
+	}
 
 	Query(Lexer& lex) {
 		//super(lex);
@@ -234,7 +244,13 @@ class Scheme {
 public:
 	Id* id;
 	vector<Id*>* ids;
-	;
+	~Scheme() {
+		delete id;
+		for (unsigned int i = 0; i < ids->size(); i++) {
+			delete ids->at(i);
+		}
+		delete ids;
+	}
 
 
 	Scheme(Lexer& lex) {
@@ -254,6 +270,12 @@ public:
 
 class Schemes {
 	 public:
+	~Schemes() {
+		for (unsigned int i = 0; i < listOfSchemes->size(); i++) {
+			delete listOfSchemes->at(i);
+		}
+		delete listOfSchemes;
+	}
 
 	 Schemes(Lexer& lex) {
 			listOfSchemes = new vector<Scheme*>;
@@ -284,7 +306,13 @@ class Fact {
 public:
 	Id* id;
 	vector<DLString*>* listOfStrings;
-	;
+	~Fact() {
+		delete id;
+		for (unsigned int i = 0; i < listOfStrings->size(); i++) {
+			delete listOfStrings->at(i);
+		}
+		delete listOfStrings;
+	}
 
 
 	Fact(Lexer& lex) {
@@ -307,7 +335,13 @@ class Rule {
 public:
 	HeadPredicate* headPredicate;
 	vector<Predicate*>* predicateList;
-	;
+	~Rule() {
+		delete headPredicate;
+		for (unsigned int i = 0; i < predicateList->size(); i++) {
+			delete predicateList->at(i);
+		}
+		delete predicateList;
+	}
 
 
 	Rule(Lexer& lex) {
@@ -331,8 +365,13 @@ public:
 class Facts {
 public:
 	vector<Fact*>* factList;
-	
 
+	~Facts() {
+		for (unsigned int i = 0; i < factList->size(); i++) {
+			delete factList->at(i);
+		}
+		delete factList;
+	}
 	Facts(Lexer& lex) {
 		checkFor(lex, "FACTS");
 		checkFor(lex, "COLON");
@@ -364,11 +403,21 @@ void printExpressionOrParameter(vector<Rule*>*& rules, int ruleNum, int j, int x
 	}
 }
 
+void printExpressionOrParameterHead(vector<Rule*>*& rules, int ruleNum, int j, int x) {
+	if (rules->at(ruleNum)->headPredicate->ids->at(j)->isExp) {
+		Expression* expString = (Expression *)rules->at(ruleNum)->headPredicate->ids->at(j);
+		cout << expString->toString();
+	}
+	else {
+		cout << rules->at(ruleNum)->headPredicate->ids->at(j)->toString();
+	}
+}
+
 void printRulesAre(vector<Rule*>*& rules, int ruleNum) {
 	for (unsigned int j = 0; j < rules->at(ruleNum)->predicateList->size(); j++) {
 		// each predicate in the list
 		cout << rules->at(ruleNum)->predicateList->at(j)->id->toString() << "(";
-		for (int x = 0; x < rules->at(ruleNum)->predicateList->at(j)->parameters->size(); x++) {
+		for (unsigned int x = 0; x < rules->at(ruleNum)->predicateList->at(j)->parameters->size(); x++) {
 			// each parameter in the predicate
 			printExpressionOrParameter(rules, ruleNum, j, x);
 			if (x != rules->at(ruleNum)->predicateList->at(j)->parameters->size() - 1) {
@@ -394,23 +443,30 @@ public:
 				rules->push_back(new Rule(lex));
 			}
 		}
-	 void toString() {
-		 // TODO fix doubles
-		 cout << "Rules(" + to_string(rules->size()) + "):" << endl;
-		 for (unsigned int k = 0; k < rules->size(); k++) {
-			 // k is the number of rules
-					// gets first part headpredicate
-			 for (unsigned int i = 0; i < rules->size(); i++) {
-				 cout << "  " << rules->at(i)->headPredicate->idIs->value << "(";
-				 for (unsigned int j = 0; j < rules->at(i)->headPredicate->ids->size() - 1; j++) {
-					 cout << rules->at(i)->headPredicate->ids->at(j)->toString() << ",";
-				 }
-				 cout << rules->at(i)->headPredicate->ids->at(rules->at(i)->headPredicate->ids->size() - 1)->toString() << ") :- ";
-			 }
-				 printRulesAre(rules, k);
-			 
-			 cout << "." << endl;
+	 ~Rules() {
+		 for (unsigned int i = 0; i < rules->size(); i++) {
+			 delete rules->at(i);
 		 }
+		 delete rules;
+	 }
+	 void toString() {
+		 cout << "Rules(" + to_string(rules->size()) + "):" << endl;
+			 for (unsigned int i = 0; i < rules->size(); i++) {
+				 // get's headpredicate
+				 cout << "  " << rules->at(i)->headPredicate->idIs->value << "(";
+				 for (unsigned int j = 0; j < rules->at(i)->headPredicate->ids->size(); j++) {
+					 // for each parameter in headpredicate
+					 printExpressionOrParameterHead(rules, i, j, 0);
+					 if (j != rules->at(i)->headPredicate->ids->size() - 1) {
+						 cout << ",";
+					 }
+				 }
+				 // last parameter of headPredicate
+				 cout << ") :- ";
+				 // get predicateList and parameters
+				 printRulesAre(rules, i);
+				 cout << "." << endl;
+			 }
 	 }
 };
 
@@ -430,7 +486,12 @@ void printExpressionOrParameter(vector<Query*>*& queries, int i, int j, int x) {
  public:
 	 vector<Query*>* queries;
 
-
+	 ~Queries() {
+		 for (unsigned int i = 0; i < queries->size(); i++) {
+			 delete queries->at(i);
+		 }
+		 delete queries;
+	 }
 	 Queries(Lexer& lex) {
 			checkFor(lex, "QUERIES");
 			checkFor(lex, "COLON");
@@ -473,6 +534,12 @@ void printExpressionOrParameter(vector<Query*>*& queries, int i, int j, int x) {
 		 rules = new Rules(lex);
 		 queries = new Queries(lex);
 	 }
+	 ~DatalogProgram() {
+		 delete schemes;
+		 delete facts;
+		 delete rules;
+		 delete queries;
+	 }
 
 	 void outputResults() {
 		 cout << "Success!" << endl;
@@ -485,12 +552,13 @@ void printExpressionOrParameter(vector<Query*>*& queries, int i, int j, int x) {
 
 	 void getDomains() {
 		 set<string> domains;
+		 // insert facts into domainList
 		 for (unsigned int i = 0; i < facts->factList->size(); i++) {
-			 //cout << "  " << facts->factList->at(i)->id->value << "(";
 			 for (unsigned int j = 0; j < facts->factList->at(i)->listOfStrings->size(); j++) {
 				 domains.insert(facts->factList->at(i)->listOfStrings->at(j)->toString());
 			 }
 		 }
+		 // start printing domains
 		 cout << "Domain(" << to_string(domains.size()) << "):" << endl;
 		 const auto separator = "\n";
 		 const auto* sep = "";
@@ -509,16 +577,18 @@ void printExpressionOrParameter(vector<Query*>*& queries, int i, int j, int x) {
 	 FIRST_OF_PARAMETER.insert("ID");
 	 FIRST_OF_PARAMETER.insert("STRING");
 	 FIRST_OF_PARAMETER.insert("LEFT_PAREN");
-	 Lexer* parse = new Lexer("TestCase.txt");
+	 Lexer* parse = new Lexer(argv[1]);
+	 DatalogProgram* program;
 	 try {
-		 DatalogProgram* program = new DatalogProgram(*parse);
+		 program = new DatalogProgram(*parse);
 		 program->outputResults();
 	 }
-	 catch (const std::invalid_argument& e){
+	 catch (const std::invalid_argument&){
+		 program = 0;
 		 // Error occured.  Failure will be output where it threw the error
 	 }
-	/* delete parse;
-	 delete program;*/
+	 delete parse;
+	 delete program;
 
 return 0;             
 
