@@ -10,12 +10,11 @@ using namespace std;
 
 set<string> FIRST_OF_PARAMETER;
 
-
 void checkType(Lexer& lex, string type) {
 	if (lex.getCurrentToken().getTokenType() != type) {
 			cout << "Failure!" << endl;
 			cout << "  " << lex.getCurrentToken().toString() << endl;
-			throw std::invalid_argument("Expecting token of type " + type + " but found " +  lex.getCurrentToken().getTokenType());
+			throw std::runtime_error("Expecting token of type " + type + " but found " +  lex.getCurrentToken().getTokenType());
 	}
 }
 
@@ -46,6 +45,9 @@ public:
 	}
 };
 
+void deleteExpOrParam(Parameter* param);
+
+
 class Id : public Parameter
 {
 public:
@@ -71,7 +73,9 @@ public:
 			op = "MULTIPLY";
 		}
 		else {
-			throw new runtime_error(
+			cout << "Failure!" << endl;
+			cout << "  " << lex.getCurrentToken().toString() << endl;
+			throw runtime_error(
 				"Expecting operator but found " + lex.getCurrentToken().getTokenType());
 		}
 		lex.advanceTokens();
@@ -99,20 +103,38 @@ public:
 	Parameter* rightParameter;
 
 	~Expression() {
-		delete leftParameter;
-		delete rightParameter;
+		deleteExpOrParam(leftParameter);
+		deleteExpOrParam(rightParameter);		
 		delete op;
 	}
 
+
 	Expression(Lexer& lex) {
-		checkFor(lex, "LEFT_PAREN");
+		try {
+			op = nullptr;
+			leftParameter = nullptr;
+			rightParameter = nullptr;
+			checkFor(lex, "LEFT_PAREN");
 
-		leftParameter = createParameter(lex);
-		op = new Operator(lex);
-		rightParameter = createParameter(lex);
+			leftParameter = createParameter(lex);
+			op = new Operator(lex);
+			rightParameter = createParameter(lex);
 
-		checkFor(lex, "RIGHT_PAREN");
-		isExp = true;
+			checkFor(lex, "RIGHT_PAREN");
+			isExp = true;
+		}
+		catch (const std::runtime_error&) {
+			if (op) {
+				delete op;
+			}
+			if (leftParameter) {
+				deleteExpOrParam(leftParameter);
+			}
+			if (rightParameter) {
+				deleteExpOrParam(rightParameter);
+			}
+			throw std::runtime_error("Deleted");
+		}
 	}
 
 	string toString() {
@@ -134,6 +156,17 @@ public:
 };
 
 
+void deleteExpOrParam(Parameter* param) {
+	if (param->isExp) {
+		Expression * exp = (Expression*) param;
+		delete exp;
+	}
+	else {
+		delete param;
+	}
+}
+
+
 class DLString : public Parameter
 {
 public:
@@ -145,9 +178,8 @@ public:
 };
 
 
-
 Parameter* createParameter(Lexer& lex) {
-	Parameter* result;
+	Parameter* result = nullptr;
 	if (lex.getCurrentToken().getTokenType() == "ID") {
 		result = (Parameter*) new Id(lex);
 	}
@@ -159,7 +191,9 @@ Parameter* createParameter(Lexer& lex) {
 		result = (Parameter*) new Expression(lex);
 	}
 	else {
-		throw new runtime_error(
+		cout << "Failure!" << endl;
+		cout << "  " << lex.getCurrentToken().toString() << endl;
+		throw runtime_error(
 			"Looking for a Parameter but found ");
 	}
 	return result;
@@ -181,17 +215,33 @@ public:
 
 
 	HeadPredicate(Lexer& lex) {
-		idIs = new Id(lex);
-		checkFor(lex, "LEFT_PAREN");
+		try {
+			idIs = nullptr;
+			ids = nullptr;
+			idIs = new Id(lex);
+			checkFor(lex, "LEFT_PAREN");
 
-		ids = new vector<Id*>();
-		while (true) {
-			ids->push_back(new Id(lex));
-			if (lex.getCurrentToken().getTokenType() != "COMMA") break;
-			lex.advanceTokens();
+			ids = new vector<Id*>();
+			while (true) {
+				ids->push_back(new Id(lex));
+				if (lex.getCurrentToken().getTokenType() != "COMMA") break;
+				lex.advanceTokens();
+			}
+
+			checkFor(lex, "RIGHT_PAREN");
 		}
-
-		checkFor(lex, "RIGHT_PAREN");
+		catch (const std::runtime_error&) {
+			if (idIs) {
+				delete idIs;
+			}
+			if (ids) {
+				for (unsigned int i = 0; i < ids->size(); i++) {
+					delete ids->at(i);
+				}
+				delete ids;
+			}
+			throw std::runtime_error("Deleted");
+		}
 	}
 };
 
@@ -204,24 +254,40 @@ public:
 	~Predicate() {
 		delete id;
 		for (unsigned int i = 0; i < parameters->size(); i++) {
-			delete parameters->at(i);
+			deleteExpOrParam(parameters->at(i));
 		}
 		delete parameters;
 	}
 
 	Predicate(Lexer& lex) {
-		id = new Id(lex);
-		checkFor(lex, "LEFT_PAREN");
-		parameters = new vector<Parameter*>();
+		try {
+			id = nullptr;
+			parameters = nullptr;
+			id = new Id(lex);
+			checkFor(lex, "LEFT_PAREN");
+			parameters = new vector<Parameter*>();
 
 
-		while (true) {
-			parameters->push_back(createParameter(lex));
-			if (lex.getCurrentToken().getTokenType() != "COMMA") break;
-			lex.advanceTokens();
+			while (true) {
+				parameters->push_back(createParameter(lex));
+				if (lex.getCurrentToken().getTokenType() != "COMMA") break;
+				lex.advanceTokens();
+			}
+
+			checkFor(lex, "RIGHT_PAREN");
 		}
-
-		checkFor(lex, "RIGHT_PAREN");
+		catch (const std::runtime_error&) {
+			if (id) {
+				delete id;
+			}
+			if (parameters) {
+				for (unsigned int i = 0; i < parameters->size(); i++) {
+					deleteExpOrParam(parameters->at(i));
+				}
+				delete parameters;
+			}
+			throw std::runtime_error("Deleted");
+		}
 	}
 };
 
@@ -234,8 +300,17 @@ public:
 
 	Query(Lexer& lex) {
 		//super(lex);
-		firstPart = new Predicate(lex);
-		checkFor(lex, "Q_MARK");
+		try {
+			firstPart = nullptr;
+			firstPart = new Predicate(lex);
+			checkFor(lex, "Q_MARK");
+		}
+		catch (const std::runtime_error&) {
+			if (firstPart) {
+				delete firstPart;
+			}
+			throw std::runtime_error("Deleted");
+		}
 	}
 
 
@@ -254,17 +329,33 @@ public:
 
 
 	Scheme(Lexer& lex) {
-		id = new Id(lex);
-		checkFor(lex, "LEFT_PAREN");
+		try {
+			id = nullptr;
+			ids = nullptr;
+			id = new Id(lex);
+			checkFor(lex, "LEFT_PAREN");
 
-		ids = new vector<Id*>();
-		while (true) {
-			ids->push_back(new Id(lex));
-			if (lex.getCurrentToken().getTokenType() != "COMMA") break;
-			lex.advanceTokens();
+			ids = new vector<Id*>();
+			while (true) {
+				ids->push_back(new Id(lex));
+				if (lex.getCurrentToken().getTokenType() != "COMMA") break;
+				lex.advanceTokens();
+			}
+
+			checkFor(lex, "RIGHT_PAREN");
 		}
-
-		checkFor(lex, "RIGHT_PAREN");
+		catch (const std::runtime_error&) {
+			if (id) {
+				delete id;
+			}
+			if (ids) {
+				for (unsigned int i = 0; i < ids->size(); i++) {
+					delete ids->at(i);
+				}
+				delete ids;
+			}
+			throw std::runtime_error("Deleted");
+		}
 	}
 };
 
@@ -278,13 +369,25 @@ class Schemes {
 	}
 
 	 Schemes(Lexer& lex) {
-			listOfSchemes = new vector<Scheme*>;
-			checkFor(lex, "SCHEMES");
-			checkFor(lex, "COLON");
+		 try {
+			 listOfSchemes = nullptr;
+			 listOfSchemes = new vector<Scheme*>;
+			 checkFor(lex, "SCHEMES");
+			 checkFor(lex, "COLON");
 
-			do {
-				listOfSchemes->push_back(new Scheme(lex));
-			} while (lex.getCurrentToken().getTokenType() == "ID");
+			 do {
+				 listOfSchemes->push_back(new Scheme(lex));
+			 } while (lex.getCurrentToken().getTokenType() == "ID");
+		 }
+		 catch (const std::runtime_error&) {
+			 if (listOfSchemes) {
+				 for (unsigned int i = 0; i < listOfSchemes->size(); i++) {
+					 delete listOfSchemes->at(i);
+				 }
+				 delete listOfSchemes;
+			 }
+			 throw std::runtime_error("Deleted");
+		 }
 		}
 	 void toString() {
 		 cout << "Schemes(" + to_string(listOfSchemes->size()) + "):" << endl;
@@ -316,6 +419,10 @@ public:
 
 
 	Fact(Lexer& lex) {
+
+		try {
+		id = nullptr;
+		listOfStrings = nullptr;
 		id = new Id(lex);
 		checkFor(lex, "LEFT_PAREN");
 
@@ -325,9 +432,21 @@ public:
 			if (lex.getCurrentToken().getTokenType() != "COMMA") break;
 			lex.advanceTokens();
 		}
-
-		checkFor(lex, "RIGHT_PAREN");
-		checkFor(lex, "PERIOD");
+			checkFor(lex, "RIGHT_PAREN");
+			checkFor(lex, "PERIOD");
+		}
+		catch (const std::runtime_error&) {
+			if (id) {
+				delete id;
+			}
+			if (listOfStrings) {
+				for (unsigned int i = 0; i < listOfStrings->size(); i++) {
+					delete listOfStrings->at(i);
+				}
+				delete listOfStrings;
+			}
+			throw std::runtime_error("Deleted");
+		}
 	}
 };
 
@@ -345,17 +464,34 @@ public:
 
 
 	Rule(Lexer& lex) {
-		headPredicate = new HeadPredicate(lex);
-		checkFor(lex, "COLON_DASH");
+		try {
+			headPredicate = nullptr;
+			predicateList = nullptr;
+			headPredicate = new HeadPredicate(lex);
+			checkFor(lex, "COLON_DASH");
 
-		predicateList = new vector<Predicate*>();
-		while (true) {
-			predicateList->push_back(new Predicate(lex));
-			if (lex.getCurrentToken().getTokenType() != "COMMA") break;
-			lex.advanceTokens();
+
+			predicateList = new vector<Predicate*>();
+			while (true) {
+				predicateList->push_back(new Predicate(lex));
+				if (lex.getCurrentToken().getTokenType() != "COMMA") break;
+				lex.advanceTokens();
+			}
+
+			checkFor(lex, "PERIOD");
 		}
-
-		checkFor(lex, "PERIOD");
+		catch (const std::runtime_error&) {
+			if (predicateList) {
+				for (unsigned int i = 0; i < predicateList->size(); i++) {
+					delete predicateList->at(i);
+				}
+				delete predicateList;
+			}
+			if (headPredicate) {
+				delete headPredicate;
+			}
+			throw std::runtime_error("Deleted");
+		}
 	}
 };
 
@@ -375,10 +511,21 @@ public:
 	Facts(Lexer& lex) {
 		checkFor(lex, "FACTS");
 		checkFor(lex, "COLON");
-
-		factList = new vector<Fact* >();
-		while (lex.getCurrentToken().getTokenType() == "ID") {
-			factList->push_back(new Fact(lex));
+		try {
+			factList = nullptr;
+			factList = new vector<Fact* >();
+			while (lex.getCurrentToken().getTokenType() == "ID") {
+				factList->push_back(new Fact(lex));
+			}
+		}
+		catch (const std::runtime_error&) {
+			if (factList) {
+				for (unsigned int i = 0; i < factList->size(); i++) {
+					delete factList->at(i);
+				}
+				delete factList;
+			}
+			throw std::runtime_error("Deleted");
 		}
 	}
 
@@ -435,13 +582,25 @@ class Rules {
 public:
 	vector<Rule*>* rules;
 	 Rules(Lexer& lex) {
-			rules = new vector<Rule* >();
+		 try {
+			 rules = nullptr;
+			 rules = new vector<Rule* >();
 
-			checkFor(lex, "RULES");
-			checkFor(lex, "COLON");
-			while (lex.getCurrentToken().getTokenType() == "ID") {
-				rules->push_back(new Rule(lex));
-			}
+			 checkFor(lex, "RULES");
+			 checkFor(lex, "COLON");
+			 while (lex.getCurrentToken().getTokenType() == "ID") {
+				 rules->push_back(new Rule(lex));
+			 }
+		 }
+		 catch (const std::runtime_error&) {
+			 if (rules) {
+				 for (unsigned int i = 0; i < rules->size(); i++) {
+					 delete rules->at(i);
+				 }
+				 delete rules;
+			 }
+			 throw std::runtime_error("Deleted");
+		 }
 		}
 	 ~Rules() {
 		 for (unsigned int i = 0; i < rules->size(); i++) {
@@ -493,13 +652,25 @@ void printExpressionOrParameter(vector<Query*>*& queries, int i, int j, int x) {
 		 delete queries;
 	 }
 	 Queries(Lexer& lex) {
+		 queries = nullptr;
 			checkFor(lex, "QUERIES");
 			checkFor(lex, "COLON");
-
-			queries = new vector<Query*>();
-			do {
-				queries->push_back(new Query(lex));
-			} while (lex.getCurrentToken().getTokenType() == "ID");
+			try {
+				queries = new vector<Query*>();
+				do {
+					queries->push_back(new Query(lex));
+				} while (lex.getCurrentToken().getTokenType() == "ID");
+			}
+			catch (const std::runtime_error&) {
+				if (queries) {
+					for (unsigned int i = 0; i < queries->size(); i++) {
+						delete queries->at(i);
+					}
+					delete queries;
+				}
+				throw std::runtime_error("Deleted");
+			}
+			
 		}
 
 	 void toString() {
@@ -527,13 +698,42 @@ void printExpressionOrParameter(vector<Query*>*& queries, int i, int j, int x) {
 	 Facts* facts;
 	 Rules* rules;
 	 Queries* queries;
+	 int stage;
 
 	 DatalogProgram(Lexer& lex) {
-		 schemes = new Schemes(lex);
-		 facts = new Facts(lex);
-		 rules = new Rules(lex);
-		 queries = new Queries(lex);
+		 try {
+			 schemes = new Schemes(lex);
+		 }
+		 catch (const std::runtime_error&) {
+			 throw std::runtime_error("Deleted");
+		 }
+		 try {
+			 facts = new Facts(lex);
+		 }
+		 catch (const std::runtime_error&) {
+			 delete schemes;
+			 throw std::runtime_error("Deleted");
+		 }
+		 try {
+			 rules = new Rules(lex);
+		 }
+		 catch (const std::runtime_error&) {
+			 delete schemes;
+			 delete facts;
+			 throw std::runtime_error("Deleted");
+		 }
+		 try {
+			 queries = new Queries(lex);
+		 }
+		 catch (const std::runtime_error&) {
+			 delete schemes;
+			 delete facts;
+			 delete rules;
+			 throw std::runtime_error("Deleted");
+
+		 }
 	 }
+
 	 ~DatalogProgram() {
 		 delete schemes;
 		 delete facts;
@@ -566,8 +766,6 @@ void printExpressionOrParameter(vector<Query*>*& queries, int i, int j, int x) {
 			 cout << sep << "  " << value;
 			 sep = separator;
 		 }
-		 //cout << endl;
-		 //TODO do I need this?
 	 }
 
 
@@ -582,13 +780,14 @@ void printExpressionOrParameter(vector<Query*>*& queries, int i, int j, int x) {
 	 try {
 		 program = new DatalogProgram(*parse);
 		 program->outputResults();
+		 delete program;
 	 }
-	 catch (const std::invalid_argument&){
-		 program = 0;
+	 catch (const std::runtime_error&){
 		 // Error occured.  Failure will be output where it threw the error
 	 }
 	 delete parse;
-	 delete program;
+
+	
 
 return 0;             
 

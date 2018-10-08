@@ -1,23 +1,18 @@
 Schemes:
   snap(S,N,A,P)
-  yoMamma(A)
 
 #comment
 
   HasSameAddress(X,Y)
-  DoesNotHaveAddress(Z,Q)
 
 Facts: #comment
   snap('12345','C. Brown','12 Apple','555-1234').
   snap('33333','Snoopy','12 Apple','555-1234').
-  snap('333','opy').
 
 Rules:
-  HasSameAddress(X,Y) :- snap((A+(C+(LastOne*Promise))),X,B,C),snap(D,Y,B,(E+C)).
-  NotHasSameAddress(X,Y) :- snap(X,B,C),snap(B,(E+C)),snap(A,C).
+  HasSameAddress(X,Y) :- snap(T,X,B,C),snap(D,(C*J),B,(E+C))?
 
 #comment
 
 Queries:
-  # comment double check the 'snoopy'
-  HasSameAddress(('Snoopy'+(A+(Last*One))),(Who*Hello))?
+  HasSameAddress('Snoopy',Who).
