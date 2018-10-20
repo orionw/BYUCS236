@@ -119,7 +119,10 @@
   <ItemGroup>
     <ClInclude Include="InputStream.h" />
     <ClInclude Include="Lexer.h" />
+    <ClInclude Include="Operator.h" />
+    <ClInclude Include="Parameter.h" />
     <ClInclude Include="token.h" />
+    <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

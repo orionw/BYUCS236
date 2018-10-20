@@ -35,5 +35,14 @@
     <ClInclude Include="Lexer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Parameter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Operator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

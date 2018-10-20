@@ -1,18 +1,14 @@
 Schemes:
-  snap(S,N,A,P)
-
-#comment
-
-  HasSameAddress(X,Y)
-
-Facts: #comment
-  snap('12345','C. Brown','12 Apple','555-1234').
-  snap('33333','Snoopy','12 Apple','555-1234').
-
+  SK(A,B)
+Facts:
+  SK('a','c').
+  SK('b','c').
+  SK('b','b').
+  SK('b','c').
 Rules:
-  HasSameAddress(X,Y) :- snap(T,X,B,C),snap(D,(C*J),B,(E+C))?
-
-#comment
-
+  DoNothing(Z) :- Stuff(Z).
 Queries:
-  HasSameAddress('Snoopy',Who).
+  SK(A,'c')?
+  SK('b','c')?
+  SK(X,X)?
+  SK(A,B)?
