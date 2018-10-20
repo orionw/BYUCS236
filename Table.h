@@ -3,9 +3,9 @@
 #include <string>
 #include <map>
 #include <set>
-#include "main2.cpp"
+#include "DatalogProgram.h"
+using namespace std;
 
-class DatalogProgram;
 // have Row and Header just be a vector of string
 class Row : public vector<string> {};
 class Header : public vector<string> {};

@@ -113,10 +113,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Lexer.cpp" />
-    <ClCompile Include="main2.cpp" />
-    <ClCompile Include="MainLab1.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DatalogProgram.h" />
     <ClInclude Include="Facts.h" />
     <ClInclude Include="InputStream.h" />
     <ClInclude Include="Lexer.h" />
@@ -126,6 +126,7 @@
     <ClInclude Include="Queries.h" />
     <ClInclude Include="Rules.h" />
     <ClInclude Include="Schemes.h" />
+    <ClInclude Include="Table.h" />
     <ClInclude Include="token.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
