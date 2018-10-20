@@ -3,6 +3,7 @@ class Parameter;
 class Expression;
 class DLString;
 class Id;
+class Query;
 
 void checkType(Lexer& lex, string type) {
 	if (lex.getCurrentToken().getTokenType() != type) {

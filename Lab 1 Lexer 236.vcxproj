@@ -117,10 +117,15 @@
     <ClCompile Include="MainLab1.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Facts.h" />
     <ClInclude Include="InputStream.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Operator.h" />
     <ClInclude Include="Parameter.h" />
+    <ClInclude Include="Predicates.h" />
+    <ClInclude Include="Queries.h" />
+    <ClInclude Include="Rules.h" />
+    <ClInclude Include="Schemes.h" />
     <ClInclude Include="token.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
