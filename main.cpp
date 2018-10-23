@@ -1,8 +1,8 @@
 #include <algorithm>
 #include "Lexer.h"
 #include "DatalogProgram.h"
+#include "Table.h"
 using namespace std;
-
 
 
  int main(int argc, char *argv[]) {
@@ -10,15 +10,15 @@ using namespace std;
 	 DatalogProgram* program;
 	 try {
 		 program = new DatalogProgram(*parse);
-		 program->outputResults();
+		 //program->outputResults();
+		 Database db(program);
+		 db.executeQueries(program);
 		 delete program;
 	 }
 	 catch (const std::runtime_error&){
 		 // Error occured.  Failure will be output where it threw the error
 	 }
 	 delete parse;
-
-	
 
 return 0;             
 

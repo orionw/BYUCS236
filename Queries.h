@@ -4,6 +4,8 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <istream>
+#include <sstream>
 #include "Lexer.h"
 #include "Parameter.h"
 #include "Utilities.h"
@@ -12,6 +14,18 @@ using namespace std;
 
 // Forward Declaration
 void printExpressionOrParameter(vector<Query*>*& queries, int i, int j, int x);
+string printExpressionOrParameterString(vector<Query*>*& queries, int i, int j, int x);
+
+class QueryItem {
+public:
+	string table;
+	vector<string> parameters;
+	QueryItem(string nameVal, vector<string> listOfParams) {
+		table = nameVal;
+		parameters = listOfParams;
+	}
+
+};
 
 class Query {
 public:
@@ -85,6 +99,28 @@ public:
 			cout << ")?" << endl;
 		}
 	}
+
+	vector<QueryItem> getQueries() {
+		string toReturn = "";
+		string tableName;
+		vector<QueryItem> queryList;
+		for (unsigned int i = 0; i < queries->size(); i++) {
+			// get table to search
+			tableName = queries->at(i)->firstPart->id->value;
+			vector<string> result;
+			for (unsigned int j = 0; j < queries->at(i)->firstPart->parameters->size() - 1; j++) {
+				result.push_back(printExpressionOrParameterString(queries, i, j, 0));
+				if (j != queries->at(i)->firstPart->parameters->size() - 1) {
+					toReturn += ",";
+				}
+			}
+			result.push_back(printExpressionOrParameterString(queries, i, queries->at(i)->firstPart->parameters->size() - 1, 0));
+			QueryItem query(tableName, result);
+			queryList.push_back(query);
+		}
+		return queryList;
+	}
+
 };
 
 
@@ -97,5 +133,17 @@ void printExpressionOrParameter(vector<Query*>*& queries, int i, int j, int x) {
 	}
 	else {
 		cout << queries->at(i)->firstPart->parameters->at(j)->toString();
+	}
+}
+
+// Utility for printing Queries
+string printExpressionOrParameterString(vector<Query*>*& queries, int i, int j, int x) {
+	// modify to do Queries
+	if (queries->at(i)->firstPart->parameters->at(j)->isExp) {
+		Expression* expString = (Expression *)queries->at(i)->firstPart->parameters->at(j);
+		return expString->toString();
+	}
+	else {
+		return queries->at(i)->firstPart->parameters->at(j)->toString();
 	}
 }

@@ -7,6 +7,7 @@
 #include "Lexer.h"
 #include "Parameter.h"
 #include "Utilities.h"
+#include "header.h"
 
 class Scheme {
 public:
@@ -92,6 +93,16 @@ public:
 			cout << listOfSchemes->at(i)->ids->at(listOfSchemes->at(i)->ids->size() - 1)->value << ")" << endl;
 		}
 	}
+
+
+	Header getParameters(int i) {
+		Header params;
+		for (unsigned int j = 0; j < listOfSchemes->at(i)->ids->size(); j++) {
+			params.push_back(listOfSchemes->at(i)->ids->at(j)->value);
+		}
+		return params;
+	}
+
 	vector<Scheme*>* listOfSchemes;
 
 };
