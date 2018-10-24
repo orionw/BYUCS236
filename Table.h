@@ -108,7 +108,7 @@ public:
 			//for loop keep the ones in the order given;
 		for (unsigned int i = 0; i < query.parameters.size(); i++) {
 			// if it is a constant erase it from the rows and header
-			if (query.parameters.at(i).find("'") == -1 && seen.find(query.parameters.at(i)) == seen.end()) {
+			if (query.parameters.at(i).find("'") == string::npos && seen.find(query.parameters.at(i)) == seen.end()) {
 				seen[query.parameters.at(i)] = 1;
 				newRelation.header.push_back(query.parameters.at(i));
 				for (unsigned int j = 0; j < rows.size(); j++) {
@@ -127,9 +127,11 @@ public:
 	}
 
 	Table rename(QueryItem query) {
+		Table newRelation;
 		for (unsigned int i = 0; i < header.size(); i++) {
 			header.at(i) = query.parameters.at(i);
 		}
+		return newRelation;
 	}
 
 };
@@ -164,7 +166,7 @@ public:
 			// for each parameter
 			for (unsigned int i = 0; i < query.parameters.size(); i++) {
 				// if there is a constant, perform a select
-				if (query.parameters.at(i).find("'") != -1) {
+				if (query.parameters.at(i).find("'") != string::npos) {
 					newRelation = newRelation.select(i, query.parameters.at(i));
 				}
 				for (unsigned int j = i + 1; j < query.parameters.size(); j++) {
