@@ -338,7 +338,7 @@ using namespace std;
 	}
 
 	bool Lexer::isWhitespace(char currentChar) {
-		if (currentChar == '\n' || currentChar == ' ' || currentChar =='\r') {
+		if (currentChar == '\n' || currentChar == ' ' || currentChar =='\r' || currentChar == '\t') {
 			return true;
 		}
 		return false;

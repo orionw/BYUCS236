@@ -13,19 +13,30 @@ public:
 	string name;
 	Header header;
 	vector<Row> rows;
-	// TODO implement this
+
+	Table() {}
+
 	void toPrint(QueryItem query) {
 		cout << query.toString();
 		if (rows.size() != 0) {
-			cout << "Yes(" << to_string(rows.size()) << ")" << endl;
-			for (unsigned int row = 0; row < rows.size(); row++) {
-				for (unsigned int col = 0; col < query.parameters.size() - 1; col++) {
-					cout << query.parameters.at(col) << "='" << rows.at(row).at(col) << "'" << ",";
+			cout << "Yes(" << to_string(rows.size()) << ")";
+			if (header.size() != 0) {
+				cout << endl;
+				for (unsigned int row = 0; row < rows.size(); row++) {
+					cout << " ";
+					for (unsigned int col = 0; col < header.size() - 1; col++) {
+						cout << " " << header.at(col) << "=" << rows.at(row).at(col) << ",";
+					}
+					cout << " " << header.at(header.size() - 1) << "=" << rows.at(row).at(header.size() - 1) << endl;
 				}
-				cout << query.parameters.at(query.parameters.size() - 1) << "='" << rows.at(row).at(query.parameters.size() - 1) << "'" << endl;
+			}
+			else {
+				// no params to print
+				cout << endl;
 			}
 		}
 		else {
+			// no matches
 			cout << "No" << endl;
 		}
 	}
@@ -66,33 +77,60 @@ public:
 				newRelation.rows.push_back(rows.at(row));
 			}
 		}
+		newRelation.header = header;
+		newRelation.name = name;
 		return newRelation;
 	}
 
 	Table select(int col1, int col2) {
 		Table newRelation;
-		// for (scan through all rows)
-		// if (the same col1 == col2
-		// new relation add the tuple = newTable.addRow()
+		for (unsigned int row = 0; row < rows.size(); row++) {
+			if (rows.at(row).at(col1) == rows.at(row).at(col2)) {
+				// add row to the new table
+				newRelation.rows.push_back(rows.at(row));
+			}
+		}
+		newRelation.header = header;
+		newRelation.name = name;
 		return newRelation;
 	}
 
-	//Project(list of columns to keep) {
-		//Table newRelation;
+	Table project(QueryItem query) {
+		Table newRelation;
 		//newRlation has same name as previous
-		//newSchema
-			//for loop keep the ones in the order given;
-		/*for (each row) {
-				// keep this schema and truples if match the input
-		}*/
 
-	Table rename(Table changeName, string newName) {
-		changeName.name = name;
-		return changeName;
-		return changeName;
+		// init empty rows
+		for (unsigned int a = 0; a < rows.size(); a++) {
+			Row row;
+			newRelation.rows.push_back(row);
+		}
+		map<string, int> seen;
+			//for loop keep the ones in the order given;
+		for (unsigned int i = 0; i < query.parameters.size(); i++) {
+			// if it is a constant erase it from the rows and header
+			if (query.parameters.at(i).find("'") == -1 && seen.find(query.parameters.at(i)) == seen.end()) {
+				seen[query.parameters.at(i)] = 1;
+				newRelation.header.push_back(query.parameters.at(i));
+				for (unsigned int j = 0; j < rows.size(); j++) {
+					newRelation.rows.at(j).push_back(rows.at(j).at(i));
+				}
+			}
+		}
+
+		// get only unique rows
+		sort(newRelation.rows.begin(), newRelation.rows.end());
+		newRelation.rows.erase(unique(newRelation.rows.begin(), newRelation.rows.end()), newRelation.rows.end());
+		
+		// assign the varaibles to the new table and return
+		newRelation.name = name;
+		return newRelation;
 	}
 
-	Table() {}
+	Table rename(QueryItem query) {
+		for (unsigned int i = 0; i < header.size(); i++) {
+			header.at(i) = query.parameters.at(i);
+		}
+	}
 
 };
 
@@ -120,27 +158,26 @@ public:
 		vector<Table> results;
 		Table newRelation;
 		vector<QueryItem> queriesToExecute = program->queries->getQueries();
+
 		for (QueryItem query : queriesToExecute) {
+			newRelation = tables[query.table];
 			// for each parameter
 			for (unsigned int i = 0; i < query.parameters.size(); i++) {
-				// for each parameter ahead of it
+				// if there is a constant, perform a select
+				if (query.parameters.at(i).find("'") != -1) {
+					newRelation = newRelation.select(i, query.parameters.at(i));
+				}
 				for (unsigned int j = i + 1; j < query.parameters.size(); j++) {
-					// if there is a constant, perform a select
-					if (query.parameters.at(i).find("'") != -1) {
-							newRelation = tables[query.table].select(i, query.parameters.at(i));
-					}
-					// the two parameters are both the same varaible.  Perform a select
-					else if (query.parameters.at(i) == query.parameters.at(j)) {
-						newRelation = tables[query.table].select(i, j);
+					// the two parameters are both the same variable.  Perform a select
+					if (query.parameters.at(i) == query.parameters.at(j)) {
+						newRelation = newRelation.select(i, j);
 					}
 				}
 			}
-			/*if (newRelation.name == "") {
-				newRelation = tables[query.table];
-			}*/
+			newRelation = newRelation.project(query);
 			newRelation.toPrint(query);
+			results.push_back(newRelation);
 		}
-		results.push_back(newRelation);
 	}
 
 	~Database() {};

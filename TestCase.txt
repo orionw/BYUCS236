@@ -1,14 +1,10 @@
-Schemes:
-  SK(A,B)
+Schemes: 
+	dc(D,C)
 Facts:
-  SK('a','c').
-  SK('b','c').
-  SK('b','b').
-  SK('b','c').
+	dc('ralph','howard').
 Rules:
-  DoNothing(Z) :- Stuff(Z).
+
 Queries:
-  SK(A,'c')?
-  SK('b','c')?
-  SK(X,X)?
-  SK(A,B)?
+	dc('ralph', X)?
+	dc('bob','bob')?
+	dc(X,Y)?
