@@ -13,7 +13,6 @@
 #include "Predicates.h"
 #include "Rules.h"
 #include "Facts.h"
-#include "Queries.h"
 using namespace std;
 
 

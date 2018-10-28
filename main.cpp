@@ -12,6 +12,7 @@ using namespace std;
 		 program = new DatalogProgram(*parse);
 		 //program->outputResults();
 		 Database db(program);
+		 db.processRules(program);
 		 db.executeQueries(program);
 		 delete program;
 	 }

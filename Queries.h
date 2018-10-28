@@ -24,6 +24,7 @@ public:
 		table = nameVal;
 		parameters = listOfParams;
 	}
+	QueryItem() {};
 	string toString() {
 		string query;
 		query += table + "(";

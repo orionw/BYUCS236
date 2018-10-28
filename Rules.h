@@ -8,8 +8,30 @@
 #include "Parameter.h"
 #include "Utilities.h"
 #include "Predicates.h"
+#include "Queries.h"
 using namespace std;
 
+
+
+class RuleItem {
+public:
+	QueryItem headPredicate;
+	vector<QueryItem> predicates;
+	RuleItem(QueryItem head, vector<QueryItem> listOfParams) {
+		headPredicate = head;
+		predicates = listOfParams;
+	}
+	string toString() {
+		string query;
+		query += headPredicate.toString() + "(";
+		for (unsigned int i = 0; i < predicates.size() - 1; i++) {
+			query += predicates.at(i).toString() + ",";
+		}
+		query += predicates.at(predicates.size() - 1).toString();
+		query += ")? ";
+		return query;
+	}
+};
 
 class Rule {
 public:
@@ -59,6 +81,8 @@ public:
 
 // forward declaration of utility function
 void printExpressionOrParameterRules(vector<Rule*>*& rules, int ruleNum, int j, int x);
+string printExpressionOrParameterRulesString(vector<Rule*>*& rules, int ruleNum, int j, int x);
+
 
 void printExpressionOrParameterHead(vector<Rule*>*& rules, int ruleNum, int j, int x) {
 	if (rules->at(ruleNum)->headPredicate->ids->at(j)->isExp) {
@@ -67,6 +91,16 @@ void printExpressionOrParameterHead(vector<Rule*>*& rules, int ruleNum, int j, i
 	}
 	else {
 		cout << rules->at(ruleNum)->headPredicate->ids->at(j)->toString();
+	}
+}
+
+string printExpressionOrParameterHeadString(vector<Rule*>*& rules, int ruleNum, int j, int x) {
+	if (rules->at(ruleNum)->headPredicate->ids->at(j)->isExp) {
+		Expression* expString = (Expression *)rules->at(ruleNum)->headPredicate->ids->at(j);
+		return expString->toString();
+	}
+	else {
+		return rules->at(ruleNum)->headPredicate->ids->at(j)->toString();
 	}
 }
 
@@ -149,6 +183,40 @@ public:
 			cout << "." << endl;
 		}
 	}
+
+	vector<RuleItem> getRules() {
+		string tableName;
+		vector<QueryItem> queryList;
+		QueryItem head;
+		vector<RuleItem> ruleList;
+
+		// For each headPredicate and following predicates
+		for (unsigned int i = 0; i < rules->size(); i++) {
+			tableName = rules->at(i)->headPredicate->idIs->value;
+			vector<string> queryParams;
+			for (unsigned int j = 0; j < rules->at(i)->headPredicate->ids->size(); j++) {
+				// for each parameter in headpredicate
+				queryParams.push_back(printExpressionOrParameterHeadString(rules, i, j, 0));
+			}
+			head = QueryItem(tableName, queryParams);
+
+			// Get the other predicates
+			string tableName;
+			//  for each predicate in the list
+			for (unsigned int j = 0; j < rules->at(i)->predicateList->size(); j++) {
+				tableName = rules->at(i)->predicateList->at(j)->id->toString();
+				// for each parameter
+				vector<string> ruleParams;
+				for (unsigned int x = 0; x < rules->at(i)->predicateList->at(j)->parameters->size(); x++) {
+					// each parameter in the predicate
+					ruleParams.push_back(printExpressionOrParameterRulesString(rules, i, j, x));
+				}
+				queryList.push_back(QueryItem(tableName, ruleParams));
+			}
+			ruleList.push_back(RuleItem(head, queryList));
+		}
+		return ruleList;
+	}
 };
 
 void printExpressionOrParameterRules(vector<Rule*>*& rules, int ruleNum, int j, int x) {
@@ -161,5 +229,13 @@ void printExpressionOrParameterRules(vector<Rule*>*& rules, int ruleNum, int j, 
 	}
 }
 
-
-
+// Utility for printing Rules
+string printExpressionOrParameterRulesString(vector<Rule*>*& rules, int ruleNum, int j, int x) {
+	if (rules->at(ruleNum)->predicateList->at(j)->parameters->at(x)->isExp) {
+		Expression* expString = (Expression *)rules->at(ruleNum)->predicateList->at(j)->parameters->at(x);
+		return expString->toString();
+	}
+	else {
+		return rules->at(ruleNum)->predicateList->at(j)->parameters->at(x)->toString();
+	}
+}

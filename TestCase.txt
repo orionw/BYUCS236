@@ -1,10 +1,18 @@
-Schemes: 
-	dc(D,C)
+Schemes:
+E(X,Y)
+R(T,U)
 Facts:
-	dc('ralph','howard').
+E('1','1').
+E('1','2').
+E('2','2').
+E('2','3').
+E('3','3').
+E('3','4').
+E('4','4').
+E('4','1').
+R('1','1').
+R('8','3').
 Rules:
-
+R(I,J) :- R(I,Z),E(Z,J).
 Queries:
-	dc('ralph', X)?
-	dc('bob','bob')?
-	dc(X,Y)?
+R('1','4')?
