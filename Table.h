@@ -127,6 +127,7 @@ cout << "No" << endl;
 		return newRelation;
 	}
 
+	// Never used
 	Table rename(QueryItem query) {
 		Table newRelation;
 		for (unsigned int i = 0; i < header.size(); i++) {
@@ -152,7 +153,8 @@ cout << "No" << endl;
 		return sameColumns;
 	}
 
-	vector<vector<int>> getJoinColumnsToKeep(vector<string> headerToJoin) {
+	// function for head predicate column
+	vector<vector<int>> getJoinColumnsToKeep(vector<string> header, Header headerToJoin) {
 		vector<vector<int>> sameColumns;
 		for (unsigned int col = 0; col < header.size(); col++) {
 			for (unsigned int colToJoin = 0; colToJoin < headerToJoin.size(); colToJoin++) {
@@ -182,6 +184,7 @@ cout << "No" << endl;
 		return true;
 	}
 
+	// Gets the rows of a joined operation
 	Row joined(Row row, Row rowToJoin, vector<int>& columnsToKeep) {
 		for (unsigned int colToJoin = 0; colToJoin < rowToJoin.size(); colToJoin++) {
 			if (find(columnsToKeep.begin(), columnsToKeep.end(), colToJoin) != columnsToKeep.end()) {
@@ -191,6 +194,7 @@ cout << "No" << endl;
 		return row;
 	}
 
+	// Gets the header of a join operation
 	Header getJoinedHeader(Header header, Header headerToJoin, vector<int>& columnsToKeep) {
 		for (unsigned int colToJoin = 0; colToJoin < headerToJoin.size(); colToJoin++) {
 			if (find(columnsToKeep.begin(), columnsToKeep.end(), colToJoin) != columnsToKeep.end()) {
@@ -218,7 +222,7 @@ cout << "No" << endl;
 	}
 
 
-
+	// Joins two columns together based on shared column names
 	Table join(Table toJoin) {
 		Table joinResult;
 		vector<vector<int>> columnsToKeep = getJoinColumnsToKeep(toJoin.header);
@@ -238,23 +242,40 @@ cout << "No" << endl;
 	// keep only the columns needed for the head predicate
 	Table filter(QueryItem head, Table joined) {
 		Table newRelation;
-		newRelation.name = joined.name;
+		newRelation.name = head.table;
 
 		// keep the schema for the headPredicate
 		for (string param : head.parameters) {
 			newRelation.header.push_back(param);
 		}
 		// Get the mapping of the columns we need
-		vector<vector<int>> columnsToKeep = getJoinColumnsToKeep(head.parameters);
+		vector<vector<int>> columnsToKeep = getJoinColumnsToKeep(head.parameters, header);
 		for (Row row : joined.rows) {
 			Row filtered;
-			for (int i = 0; i < columnsToKeep.size(); i++) {
+			for (unsigned int i = 0; i < columnsToKeep.size(); i++) {
 				// this should push the columns back in the right order
 				filtered.push_back(row.at(columnsToKeep.at(i).at(1)));
 			}
 			newRelation.rows.push_back(filtered);
 		}
 		return newRelation;
+	}
+
+
+	bool unionOp(Table ruleTable) {
+
+		int sizeBefore = rows.size();
+		for (Row row : ruleTable.rows) {
+			rows.push_back(row);
+		}
+		// sort the database and delete non-unique additions
+		sort(rows.begin(), rows.end());
+		rows.erase(unique(rows.begin(), rows.end()), rows.end());
+
+		int sizeAfter = rows.size();
+
+		// if there were rows added return true
+		return (sizeAfter - sizeBefore);
 	}
 
 };
@@ -331,11 +352,11 @@ public:
 		bool ruleAdded = true;
 		vector<Table> interimTables;
 		Table joined;
-		while (ruleAdded) {
-			// get the tables from each rule query
-			for (unsigned int i = 0; i < rulesToProcess.size(); i++) {
+		// TODO: Determine whether it is fixed point for each rule or all sets of rules
+		for (unsigned int i = 0; i < rulesToProcess.size(); i++) {
+			while (ruleAdded) {
+				// get the tables from each rule query
 				for (unsigned int j = 0; j < rulesToProcess.at(i).predicates.size(); j++) {
-					ruleAdded = false;
 					// process the j-th predicate query
 					interimTables.push_back(process(rulesToProcess.at(i).predicates.at(j), ruleAdded, program));
 				}
@@ -344,7 +365,10 @@ public:
 				for (unsigned int i = 1; i < interimTables.size(); i++) {
 					joined = joined.join(interimTables.at(i));
 				}
+				// slice out the columns we don't need
 				Table renamed = joined.filter(rulesToProcess.at(i).headPredicate, joined);
+				// Union the results with the main table and see if a new row was added
+				ruleAdded = tables[renamed.name].unionOp(renamed);
 			}
 		}
 	}
