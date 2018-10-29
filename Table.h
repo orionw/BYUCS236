@@ -285,6 +285,7 @@ class Database {
 public:
 	map<string, Table> tables;
 	bool newAdd;
+	int runs;
 
 	// initialize the database with the schemes and facts
 	Database(DatalogProgram* program) {
@@ -350,11 +351,15 @@ public:
 	void processRules(DatalogProgram* program) {
 		vector<RuleItem> rulesToProcess = program->rules->getRules();
 		bool ruleAdded = true;
+		bool redo = false;
 		vector<Table> interimTables;
 		Table joined;
 		// TODO: Determine whether it is fixed point for each rule or all sets of rules
 		for (unsigned int i = 0; i < rulesToProcess.size(); i++) {
 			while (ruleAdded) {
+				if (redo) {
+					i = 0;
+				}
 				// get the tables from each rule query
 				for (unsigned int j = 0; j < rulesToProcess.at(i).predicates.size(); j++) {
 					// process the j-th predicate query
@@ -369,6 +374,10 @@ public:
 				Table renamed = joined.filter(rulesToProcess.at(i).headPredicate, joined);
 				// Union the results with the main table and see if a new row was added
 				ruleAdded = tables[renamed.name].unionOp(renamed);
+				if (ruleAdded) {
+					redo = true;
+					runs++;
+				}
 			}
 		}
 	}
