@@ -38,7 +38,7 @@ public:
 		}
 		else {
 			// no matches
-cout << "No" << endl;
+		cout << "No" << endl;
 		}
 	}
 
@@ -119,8 +119,12 @@ cout << "No" << endl;
 		}
 
 		// get only unique rows
-		sort(newRelation.rows.begin(), newRelation.rows.end());
-		newRelation.rows.erase(unique(newRelation.rows.begin(), newRelation.rows.end()), newRelation.rows.end());
+		set<Row> s(newRelation.rows.begin(), newRelation.rows.end());
+		newRelation.rows.assign(s.begin(), s.end());
+		//set<Row> s;
+		//unsigned size = newRelation.rows.size();
+		//for (unsigned i = 0; i < size; ++i) s.insert(newRelation.rows[i]);
+		//newRelation.rows.assign(s.begin(), s.end());
 
 		// assign the varaibles to the new table and return
 		newRelation.name = name;
@@ -210,7 +214,7 @@ cout << "No" << endl;
 		for (unsigned int column = 0; column < rowToJoin.size(); column++) {
 			bool joinedCol = false;
 			for (unsigned int pair = 0; pair < columnsToKeep.size(); pair++) {
-				if (column == columnsToKeep.at(pair).at(1)) {
+				if (column == (unsigned) columnsToKeep.at(pair).at(1)) {
 					joinedCol = true;
 				}
 			}
@@ -223,7 +227,7 @@ cout << "No" << endl;
 
 
 	// Joins two columns together based on shared column names
-	Table join(Table toJoin) {
+	Table join(Table toJoin, int querySize = 2) {
 		Table joinResult;
 		vector<vector<int>> columnsToKeep = getJoinColumnsToKeep(toJoin.header);
 		vector<int> columnJoinIndices = getJoinIndices(header, toJoin.header, columnsToKeep);
@@ -235,6 +239,12 @@ cout << "No" << endl;
 					joinResult.rows.push_back(joined(row, rowToJoin, columnJoinIndices));
 				}
 			}
+		}
+		if (rows.size() == 0 && querySize == 1) {
+			joinResult.rows = toJoin.rows;
+		}
+		else if (toJoin.rows.size() == 0 && querySize == 1) {
+			joinResult.rows = rows;
 		}
 		return joinResult;
 	}
@@ -269,8 +279,16 @@ cout << "No" << endl;
 			rows.push_back(row);
 		}
 		// sort the database and delete non-unique additions
-		sort(rows.begin(), rows.end());
-		rows.erase(unique(rows.begin(), rows.end()), rows.end());
+		// sort the database and delete non-unique additions
+		set<Row> s(rows.begin(), rows.end());
+		rows.assign(s.begin(), s.end());
+		/*set<Row> s;
+		unsigned size = rows.size();
+		for (unsigned i = 0; i < size; ++i) s.insert(rows[i]);
+		rows.assign(s.begin(), s.end());*/
+
+	/*	sort(rows.begin(), rows.end());
+		rows.erase(unique(rows.begin(), rows.end()), rows.end());*/
 
 		int sizeAfter = rows.size();
 
@@ -298,6 +316,7 @@ public:
 			string tableName = program->facts->factList->at(i)->id->value;
 			tables[tableName].initializeRow(program->facts->factList->at(i)->listOfStrings);
 		}
+		runs = 0;
 
 	}
 
@@ -342,24 +361,36 @@ public:
 		vector<QueryItem> ruleToDo;
 		ruleToDo.push_back(rule);
 		newRelation = executeQueries(program, ruleToDo, false);
-		if (newAdd = true) {
+		if (newAdd == true) {
 			ruleAdded = true;
 		}
 		return newRelation;
 	}
 
+	void printRuleItems(vector<RuleItem> rulesObject) {
+		for (unsigned i = 0; i < rulesObject.size(); i++) {
+			cout << rulesObject.at(i).headPredicate.toString() << ":-";
+			for (unsigned int j = 0; j < rulesObject.at(i).predicates.size(); j++) {
+				cout << rulesObject.at(i).predicates.at(j).toString();
+			}
+			cout << endl;
+		}
+	}
+
 	void processRules(DatalogProgram* program) {
 		vector<RuleItem> rulesToProcess = program->rules->getRules();
-		bool ruleAdded = true;
-		bool redo = false;
+		//printRuleItems(rulesToProcess);
+		bool redo = true;
 		vector<Table> interimTables;
 		Table joined;
 		// TODO: Determine whether it is fixed point for each rule or all sets of rules
-		for (unsigned int i = 0; i < rulesToProcess.size(); i++) {
-			while (ruleAdded) {
-				if (redo) {
-					i = 0;
-				}
+		bool ruleAdded = true;
+		while (redo) {
+			redo = false;
+			runs++;
+			// for each rule
+			for (unsigned int i = 0; i < rulesToProcess.size(); i++) {
+				interimTables.clear();
 				// get the tables from each rule query
 				for (unsigned int j = 0; j < rulesToProcess.at(i).predicates.size(); j++) {
 					// process the j-th predicate query
@@ -367,8 +398,8 @@ public:
 				}
 				// join the tables from each query
 				joined = interimTables.at(0);
-				for (unsigned int i = 1; i < interimTables.size(); i++) {
-					joined = joined.join(interimTables.at(i));
+				for (unsigned int k = 1; k < interimTables.size(); k++) {
+					joined = joined.join(interimTables.at(k), rulesToProcess.at(i).predicates.size());
 				}
 				// slice out the columns we don't need
 				Table renamed = joined.filter(rulesToProcess.at(i).headPredicate, joined);
@@ -376,7 +407,6 @@ public:
 				ruleAdded = tables[renamed.name].unionOp(renamed);
 				if (ruleAdded) {
 					redo = true;
-					runs++;
 				}
 			}
 		}

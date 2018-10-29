@@ -13,7 +13,7 @@ using namespace std;
 		 //program->outputResults();
 		 Database db(program);
 		 db.processRules(program);
-		 cout << "Schemes populated after " << db.runs + 1 << " passes through the Rules." << endl;
+		 cout << "Schemes populated after " << db.runs << " passes through the Rules." << endl;
 		 db.executeQueries(program);
 		 delete program;
 	 }

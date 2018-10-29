@@ -1,19 +1,26 @@
+
+
+# long-running input for CS 236 Lab 4
+# takes about 1 minute without valgrind
+
+
 Schemes:
-E(X,Y)
-R(T,U)
+A(a,b,c,d,e)
+
+
 Facts:
-E('1','1').
-E('1','2').
-E('1','4').
-E('2','2').
-E('2','3').
-E('3','3').
-E('3','4').
-E('4','4').
-E('4','1').
-R('1','1').
-R('8','3').
+A('a','b','c','d','e').
+# Comment the next fact to half the size
+A('f','g','h','i','j').
+
+
 Rules:
-R(I,J) :- R(I,Z),E(Z,J).
+A(a,b,c,d,e) :- A(e,d,c,b,a).
+A(a,b,c,f,g) :- A(a,b,c,d,e),A(e,d,c,f,g).
+A(a,b,c,d,e) :- A(b,c,d,e,a).
+A(a,b,c,d,e) :- A(b,a,c,d,e).
+
+
 Queries:
-R('1','4')?
+A(a,b,c,d,e)?
+

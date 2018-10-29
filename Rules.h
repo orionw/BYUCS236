@@ -186,7 +186,6 @@ public:
 
 	vector<RuleItem> getRules() {
 		string tableName;
-		vector<QueryItem> queryList;
 		QueryItem head;
 		vector<RuleItem> ruleList;
 
@@ -202,6 +201,7 @@ public:
 
 			// Get the other predicates
 			string tableName;
+			vector<QueryItem> queryList;
 			//  for each predicate in the list
 			for (unsigned int j = 0; j < rules->at(i)->predicateList->size(); j++) {
 				tableName = rules->at(i)->predicateList->at(j)->id->toString();
