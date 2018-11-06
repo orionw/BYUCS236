@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <iterator>
 #include "DatalogProgram.h"
 #include "header.h"
 using namespace std;
@@ -271,8 +272,41 @@ public:
 		return newRelation;
 	}
 
+	string printRule(RuleItem rule) {
+		string result = "";
+		result += rule.headPredicate.toString("rule");
+		result += " :- ";
+		for (unsigned int i = 0; i < rule.predicates.size(); i++) {
+			if (i > 0) {
+				result += ",";
+			}
+			result += rule.predicates.at(i).toString("rule");
+			
+		}
+		result += ".";
+		return result;
+	}
 
-	bool unionOp(Table ruleTable) {
+	void printRuleAdditions(vector<Row> diff, RuleItem rule, Header header) {
+		cout << printRule(rule) << endl;
+		for (unsigned int i = 0; i < diff.size(); i++) {
+			cout << diff.at(i).toString(header) << endl;
+		}
+	}
+
+
+	bool unionOp(Table ruleTable, RuleItem rule) {
+		// TODO: do I need to print "Rule Evaluation" and "Query Evaluation"???
+
+		// remove this if we go with the wiki's format (also this is slow) at least 0(nlogn)
+		// Get diff between vectors and print
+		std::sort(ruleTable.rows.begin(), ruleTable.rows.end());
+		std::sort(rows.begin(), rows.end());
+		std::vector<Row> diff;
+		std::set_difference(ruleTable.rows.begin(), ruleTable.rows.end(), rows.begin(), rows.end(),
+			std::inserter(diff, diff.begin()));
+		printRuleAdditions(diff, rule, header);
+		// end rule printouts
 
 		int sizeBefore = rows.size();
 		for (Row row : ruleTable.rows) {
@@ -404,7 +438,7 @@ public:
 				// slice out the columns we don't need
 				Table renamed = joined.filter(rulesToProcess.at(i).headPredicate, joined);
 				// Union the results with the main table and see if a new row was added
-				ruleAdded = tables[renamed.name].unionOp(renamed);
+				ruleAdded = tables[renamed.name].unionOp(renamed, rulesToProcess.at(i));
 				if (ruleAdded) {
 					redo = true;
 				}

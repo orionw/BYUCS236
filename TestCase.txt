@@ -1,26 +1,23 @@
-
-
-# long-running input for CS 236 Lab 4
-# takes about 1 minute without valgrind
-
-
 Schemes:
-A(a,b,c,d,e)
-
+  snap(S,N,A,P)
+  csg(C,S,G)
+  cn(C,N)
+  ncg(N,C,G)
 
 Facts:
-A('a','b','c','d','e').
-# Comment the next fact to half the size
-A('f','g','h','i','j').
-
+  snap('12345','C. Brown','12 Apple St.','555-1234').
+  snap('22222','P. Patty','56 Grape Blvd','555-9999').
+  snap('33333','Snoopy','12 Apple St.','555-1234').
+  csg('CS101','12345','A').
+  csg('CS101','22222','B').
+  csg('CS101','33333','C').
+  csg('EE200','12345','B+').
+  csg('EE200','22222','B').
 
 Rules:
-A(a,b,c,d,e) :- A(e,d,c,b,a).
-A(a,b,c,f,g) :- A(a,b,c,d,e),A(e,d,c,f,g).
-A(a,b,c,d,e) :- A(b,c,d,e,a).
-A(a,b,c,d,e) :- A(b,a,c,d,e).
-
+  cn(c,n) :- snap(S,n,A,P),csg(c,S,G).
+  ncg(n,c,g) :- snap(S,n,A,P),csg(c,S,g).
 
 Queries:
-A(a,b,c,d,e)?
-
+  cn('CS101',Name)?
+  ncg('Snoopy',Course,Grade)?

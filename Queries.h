@@ -25,15 +25,27 @@ public:
 		parameters = listOfParams;
 	}
 	QueryItem() {};
-	string toString() {
-		string query;
-		query += table + "(";
-		for (unsigned int i = 0; i < parameters.size() - 1; i++) {
-			query += parameters.at(i) + ",";
+	string toString(string ruleOrNot = "") {
+		if (ruleOrNot == "") {
+			string query;
+			query += table + "(";
+			for (unsigned int i = 0; i < parameters.size() - 1; i++) {
+				query += parameters.at(i) + ",";
+			}
+			query += parameters.at(parameters.size() - 1);
+			query += ")? ";
+			return query;
 		}
-		query += parameters.at(parameters.size() - 1);
-		query += ")? ";
-		return query;
+		else {
+			string query;
+			query += table + "(";
+			for (unsigned int i = 0; i < parameters.size() - 1; i++) {
+				query += parameters.at(i) + ",";
+			}
+			query += parameters.at(parameters.size() - 1);
+			query += ")";
+			return query;
+		}
 	}
 
 };
