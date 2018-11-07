@@ -297,10 +297,12 @@ public:
 
 	bool unionOp(Table ruleTable, RuleItem rule) {
 		// TODO: do I need to print "Rule Evaluation" and "Query Evaluation"???
-
 		// remove this if we go with the wiki's format (also this is slow) at least 0(nlogn)
 		// Get diff between vectors and print
 		std::sort(ruleTable.rows.begin(), ruleTable.rows.end());
+		set<Row> sRule(ruleTable.rows.begin(), ruleTable.rows.end());
+		ruleTable.rows.assign(sRule.begin(), sRule.end());
+
 		std::sort(rows.begin(), rows.end());
 		std::vector<Row> diff;
 		std::set_difference(ruleTable.rows.begin(), ruleTable.rows.end(), rows.begin(), rows.end(),
