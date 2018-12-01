@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 ﻿Build started 12/1/2018 2:32:05 PM.
+=======
+﻿Build started 12/1/2018 1:48:35 PM.
+>>>>>>> parent of 754f664... minor comma fix
      1>Project "C:\Users\orion\source\repos\Lab 1 Lexer 236\Lab 1 Lexer 236\Lab 1 Lexer 236.vcxproj" on node 2 (Build target(s)).
      1>InitializeBuildStatus:
          Creating "Debug\Lab 1 Lexer 236.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
