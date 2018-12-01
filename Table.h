@@ -40,7 +40,7 @@ public:
 		}
 		else {
 			// no matches
-		cout << "No" << endl;
+			cout << "No" << endl;
 		}
 	}
 
@@ -216,7 +216,7 @@ public:
 		for (unsigned int column = 0; column < rowToJoin.size(); column++) {
 			bool joinedCol = false;
 			for (unsigned int pair = 0; pair < columnsToKeep.size(); pair++) {
-				if (column == (unsigned) columnsToKeep.at(pair).at(1)) {
+				if (column == (unsigned)columnsToKeep.at(pair).at(1)) {
 					joinedCol = true;
 				}
 			}
@@ -282,7 +282,7 @@ public:
 				result += ",";
 			}
 			result += rule.predicates.at(i).toString("rule");
-			
+
 		}
 		result += ".";
 		return result;
@@ -324,7 +324,7 @@ public:
 		for (unsigned i = 0; i < size; ++i) s.insert(rows[i]);
 		rows.assign(s.begin(), s.end());*/
 
-	/*	sort(rows.begin(), rows.end());
+		/*	sort(rows.begin(), rows.end());
 		rows.erase(unique(rows.begin(), rows.end()), rows.end());*/
 
 		int sizeAfter = rows.size();
@@ -427,9 +427,11 @@ public:
 			if (count) {
 				stringSCC += ",";
 			}
+			stringSCC += "R";
 			stringSCC += to_string(s);
+			count++;
 		}
-		cout << "SCC: R" << stringSCC << endl;
+		cout << "SCC: " << stringSCC << endl;
 		return subset;
 	}
 
@@ -475,13 +477,15 @@ public:
 			}
 			string stringSCC = "";
 			int count = 0;
-			for (int s :  SCC.at(row)) {
+			for (int s : SCC.at(row)) {
 				if (count) {
 					stringSCC += ",";
 				}
+				stringSCC += "R";
 				stringSCC += to_string(s);
+				count++;
 			}
-			cout << to_string(runs) << " passes: R" << stringSCC << endl;
+			cout << to_string(runs) << " passes: " << stringSCC << endl;
 		}
 	}
 

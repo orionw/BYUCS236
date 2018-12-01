@@ -151,14 +151,14 @@ public:
 
 	void getSCC() {
 		/*
-		The first SCC is found by running a depth-first search on the original dependency graph 
-		starting from the node with the largest post-order number. 
+		The first SCC is found by running a depth-first search on the original dependency graph
+		starting from the node with the largest post-order number.
 		Any node visited during the DFS is part of the SCC.*/
 		map<int, bool> visitedSCC;
 		bool pushed = false;
 		stack<int> DFS;
 		int SSCCount = -1;
-		for (int i = (int) postOrder.size() - 1; i >= 0; i--) {
+		for (int i = (int)postOrder.size() - 1; i >= 0; i--) {
 			// if not visited
 			if (visitedSCC.find(i) == visitedSCC.end()) {
 				// new SCC, push back a new set
@@ -166,23 +166,23 @@ public:
 				set<int> currentSet;
 				SCC.push_back(currentSet);
 				// mark the node as visited and push it
+				visitedSCC[i] = true;
 				DFS.push(i);
 				// begin the depth search
 				while (!DFS.empty()) {
-					int topNode = DFS.top();
-					DFS.pop();
-					// hasn't been visited so add it
-					if (visitedSCC.find(topNode) == visitedSCC.end()) {
-						visitedSCC[topNode] = true;
-						for (int child : depList.at(topNode)) {
+					for (int child : depList.at(DFS.top())) {
+						// hasn't been visited so add it
+						if (visitedSCC.find(child) == visitedSCC.end()) {
 							pushed = true;
 							DFS.push(child);
+							visitedSCC[child] = true;
 						}
 					}
 					// check if anything was added
 					if (!pushed) {
 						// it is next on the post order
-						SCC.at(SSCCount).insert(topNode);
+						SCC.at(SSCCount).insert(DFS.top());
+						DFS.pop();
 					}
 					else {
 						// reset counter
