@@ -427,9 +427,11 @@ public:
 			if (count) {
 				stringSCC += ",";
 			}
+			stringSCC += "R";
 			stringSCC += to_string(s);
+			count++;
 		}
-		cout << "SCC: R" << stringSCC << endl;
+		cout << "SCC: " << stringSCC << endl;
 		return subset;
 	}
 
@@ -479,9 +481,11 @@ public:
 				if (count) {
 					stringSCC += ",";
 				}
+				stringSCC += "R";
 				stringSCC += to_string(s);
+				count++;
 			}
-			cout << to_string(runs) << " passes: R" << stringSCC << endl;
+			cout << to_string(runs) << " passes: " << stringSCC << endl;
 		}
 	}
 
