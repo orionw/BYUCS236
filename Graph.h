@@ -166,23 +166,23 @@ public:
 				set<int> currentSet;
 				SCC.push_back(currentSet);
 				// mark the node as visited and push it
-				visitedSCC[i] = true;
 				DFS.push(i);
 				// begin the depth search
 				while (!DFS.empty()) {
-					for (int child : depList.at(DFS.top())) {
-						// hasn't been visited so add it
-						if (visitedSCC.find(child) == visitedSCC.end()) {
+					int topNode = DFS.top();
+					DFS.pop();
+					// hasn't been visited so add it
+					if (visitedSCC.find(topNode) == visitedSCC.end()) {
+						visitedSCC[topNode] = true;
+						for (int child : depList.at(topNode)) {
 							pushed = true;
 							DFS.push(child);
-							visitedSCC[child] = true;
 						}
 					}
 					// check if anything was added
 					if (!pushed) {
 						// it is next on the post order
-						SCC.at(SSCCount).insert(DFS.top());
-						DFS.pop();
+						SCC.at(SSCCount).insert(topNode);
 					}
 					else {
 						// reset counter
