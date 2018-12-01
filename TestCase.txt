@@ -1,21 +1,39 @@
 Schemes:
-   f(a,b)
-   g(c,d)
-   r(e,f)
+A(a,b)
+rA(a,b)
+Reflexive(a,b)
+
+colB(b)
+Symmetric(a,b)
+Transitive(a,b)
+SymTran(a,b)
 
 Facts:
-   f('1','2').
-   f('4','3').
-   g('3','2').
-   r('3','5').
+A('1','2').
+A('2','3').
+A('3','4').
+A('4','5').
+A('5','6').
+A('6','7').
+A('7','8').
+A('8','9').
+A('9','10').
 
 Rules:
-   r(E,F):-f(E,F).
-   g(C,D):-f(C,X),r(X,D).
+Symmetric(X,Y) :- A(X,Y).
+Symmetric(X,Y) :- Symmetric(Y,X).
+rA(a,b) :- A(b,a).
+Reflexive(X,Y) :- A(X,Z),rA(Z,Y).
+Transitive(X,Y) :- A(X,Y).
+Transitive(X,Z) :- Transitive(X,Y),Transitive(Y,Z).
+SymTran(X,Y) :- SymTran(Y,X).
+SymTran(X,Z) :- SymTran(X,Y),SymTran(Y,Z).
+SymTran(X,Y) :- A(Y,X).
 
 Queries:
-   g('4',B)?
-   r(E,'3')?
-   f(A,B)?
-   g(A,B)?
-   r(A,B)?
+Symmetric(Q,R)?
+Reflexive(Q,R)?
+Transitive('1',P)?
+A('1','2')?
+Symmetric('2','1')?
+SymTran(X,Y)?

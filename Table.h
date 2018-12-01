@@ -435,6 +435,17 @@ public:
 		return subset;
 	}
 
+	bool dependsOnSelf(vector<RuleItem> rules) {
+		string table = rules.at(0).headPredicate.table;
+		for (unsigned int i = 0; i < rules.at(0).predicates.size(); i++) {
+			// check if table is the same as one in the predicates
+			if (table == rules.at(0).predicates.at(i).table) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	void processRules(DatalogProgram* program, vector<set<int>> SCC) {
 		vector<RuleItem> rulesToProcessFull = program->rules->getRules();
 
@@ -470,7 +481,7 @@ public:
 					if (ruleAdded) {
 						redo = true;
 					}
-					if (rulesToProcess.size() == 1 && rulesToProcess.at(0).headPredicate.table != rulesToProcess.at(0).predicates.at(0).table) {
+					if ((rulesToProcess.size() == (unsigned) 1) && !dependsOnSelf(rulesToProcess)) {
 						redo = false;
 					}
 				}

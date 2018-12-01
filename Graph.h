@@ -160,14 +160,14 @@ public:
 		int SSCCount = -1;
 		for (int i = (int)postOrder.size() - 1; i >= 0; i--) {
 			// if not visited
-			if (visitedSCC.find(i) == visitedSCC.end()) {
+			if (visitedSCC.find(postOrder.at(i)) == visitedSCC.end()) {
 				// new SCC, push back a new set
 				SSCCount++;
 				set<int> currentSet;
 				SCC.push_back(currentSet);
 				// mark the node as visited and push it
-				visitedSCC[i] = true;
-				DFS.push(i);
+				visitedSCC[postOrder.at(i)] = true;
+				DFS.push(postOrder.at(i));
 				// begin the depth search
 				while (!DFS.empty()) {
 					for (int child : depList.at(DFS.top())) {
