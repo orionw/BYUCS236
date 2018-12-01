@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 #include <iterator>
+#include "Graph.h"
 #include "DatalogProgram.h"
 #include "header.h"
 using namespace std;
@@ -413,38 +414,74 @@ public:
 		}
 	}
 
-	void processRules(DatalogProgram* program) {
-		vector<RuleItem> rulesToProcess = program->rules->getRules();
-		//printRuleItems(rulesToProcess);
-		bool redo = true;
+	vector<RuleItem> subsetSCC(int row, vector<RuleItem> rules, vector<set<int>> SCC) {
+		vector<RuleItem> subset;
+		for (unsigned int i = 0; i < rules.size(); i++) {
+			if (SCC.at(row).find(i) != SCC.at(row).end()) {
+				subset.push_back(rules.at(i));
+			}
+		}
+		string stringSCC = "";
+		int count = 0;
+		for (int s : SCC.at(row)) {
+			if (count) {
+				stringSCC += ",";
+			}
+			stringSCC += to_string(s);
+		}
+		cout << "SCC: R" << stringSCC << endl;
+		return subset;
+	}
+
+	void processRules(DatalogProgram* program, vector<set<int>> SCC) {
+		vector<RuleItem> rulesToProcessFull = program->rules->getRules();
+
 		vector<Table> interimTables;
 		Table joined;
-		// TODO: Determine whether it is fixed point for each rule or all sets of rules
-		bool ruleAdded = true;
-		while (redo) {
-			redo = false;
-			runs++;
-			// for each rule
-			for (unsigned int i = 0; i < rulesToProcess.size(); i++) {
-				interimTables.clear();
-				// get the tables from each rule query
-				for (unsigned int j = 0; j < rulesToProcess.at(i).predicates.size(); j++) {
-					// process the j-th predicate query
-					interimTables.push_back(process(rulesToProcess.at(i).predicates.at(j), ruleAdded, program));
-				}
-				// join the tables from each query
-				joined = interimTables.at(0);
-				for (unsigned int k = 1; k < interimTables.size(); k++) {
-					joined = joined.join(interimTables.at(k), rulesToProcess.at(i).predicates.size());
-				}
-				// slice out the columns we don't need
-				Table renamed = joined.filter(rulesToProcess.at(i).headPredicate, joined);
-				// Union the results with the main table and see if a new row was added
-				ruleAdded = tables[renamed.name].unionOp(renamed, rulesToProcess.at(i));
-				if (ruleAdded) {
-					redo = true;
+
+		// for each set of strongly connected components
+		for (unsigned int row = 0; row < SCC.size(); row++) {
+			vector<RuleItem> rulesToProcess = subsetSCC(row, rulesToProcessFull, SCC);
+			runs = 0;
+			bool redo = true;
+			bool ruleAdded = true;
+			while (redo) {
+				redo = false;
+				runs++;
+				// for each rule
+				for (unsigned int i = 0; i < rulesToProcess.size(); i++) {
+					interimTables.clear();
+					// get the tables from each rule query
+					for (unsigned int j = 0; j < rulesToProcess.at(i).predicates.size(); j++) {
+						// process the j-th predicate query
+						interimTables.push_back(process(rulesToProcess.at(i).predicates.at(j), ruleAdded, program));
+					}
+					// join the tables from each query
+					joined = interimTables.at(0);
+					for (unsigned int k = 1; k < interimTables.size(); k++) {
+						joined = joined.join(interimTables.at(k), rulesToProcess.at(i).predicates.size());
+					}
+					// slice out the columns we don't need
+					Table renamed = joined.filter(rulesToProcess.at(i).headPredicate, joined);
+					// Union the results with the main table and see if a new row was added
+					ruleAdded = tables[renamed.name].unionOp(renamed, rulesToProcess.at(i));
+					if (ruleAdded) {
+						redo = true;
+					}
+					if (rulesToProcess.size() == 1 && rulesToProcess.at(0).headPredicate.table != rulesToProcess.at(0).predicates.at(0).table) {
+						redo = false;
+					}
 				}
 			}
+			string stringSCC = "";
+			int count = 0;
+			for (int s :  SCC.at(row)) {
+				if (count) {
+					stringSCC += ",";
+				}
+				stringSCC += to_string(s);
+			}
+			cout << to_string(runs) << " passes: R" << stringSCC << endl;
 		}
 	}
 

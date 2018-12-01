@@ -21,6 +21,7 @@ public:
 		headPredicate = head;
 		predicates = listOfParams;
 	}
+	RuleItem() {};
 	string toString() {
 		string query;
 		query += headPredicate.toString() + "(";
@@ -30,6 +31,10 @@ public:
 		query += predicates.at(predicates.size() - 1).toString();
 		query += ")? ";
 		return query;
+	}
+	bool operator==(const RuleItem& other) const
+	{
+		return false;
 	}
 };
 

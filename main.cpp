@@ -12,10 +12,13 @@ using namespace std;
 		 program = new DatalogProgram(*parse);
 		 //program->outputResults();
 		 Database db(program);
-		 cout << "Rule Evaluation" << endl;
-		 db.processRules(program);
-		 cout << endl << "Schemes populated after " << db.runs << " passes through the Rules." << endl << endl;
-		 cout << "Query Evaluation" << endl;
+		 Graph g(program);
+		 g.reverseDependencies(program);
+		 g.getReversePostOrder();
+		 g.getSCC();
+		 cout << endl << "Rule Evaluation" << endl;
+		 db.processRules(program, g.SCC);
+		 cout << endl << "Query Evaluation" << endl;
 		 db.executeQueries(program);
 		 delete program;
 	 }

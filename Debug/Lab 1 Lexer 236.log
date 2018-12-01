@@ -1,7 +1,7 @@
-﻿Build started 11/7/2018 2:41:20 PM.
+﻿Build started 12/1/2018 1:48:35 PM.
      1>Project "C:\Users\orion\source\repos\Lab 1 Lexer 236\Lab 1 Lexer 236\Lab 1 Lexer 236.vcxproj" on node 2 (Build target(s)).
      1>InitializeBuildStatus:
-         Touching "Debug\Lab 1 Lexer 236.tlog\unsuccessfulbuild".
+         Creating "Debug\Lab 1 Lexer 236.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.11.25503\bin\HostX86\x86\CL.exe /c /ZI /nologo /W3 /WX /diagnostics:classic /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc141.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
          main.cpp

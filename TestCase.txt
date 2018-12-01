@@ -1,19 +1,19 @@
 
-
 Schemes:
-E(X,Y)
-R(T,U)
+Parent(p,c)
+Sibling(a,b)
+Ancestor(x,y)
+
 Facts:
-E('1','1').
-E('1','2').
-E('2','2').
-E('2','3').
-E('3','3').
-E('3','4').
-E('4','4').
-E('4','1').
-R('1','1').
+Parent('bob','ned').
+Parent('jim','bob').
+Sibling('sue','ned').
+
 Rules:
-R(I,J) :- R(I,Z),E(Z,J).
+Sibling(x,y):-Sibling(y,x).
+Ancestor(x,y):-Ancestor(x,z),Parent(z,y).
+Ancestor(x,y):-Parent(x,y).
+
 Queries:
-R('1','4')?
+Ancestor(x,'ned')?
+Sibling('ned','sue')?

@@ -118,6 +118,7 @@
   <ItemGroup>
     <ClInclude Include="DatalogProgram.h" />
     <ClInclude Include="Facts.h" />
+    <ClInclude Include="Graph.h" />
     <ClInclude Include="header.h" />
     <ClInclude Include="InputStream.h" />
     <ClInclude Include="Lexer.h" />
