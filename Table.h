@@ -15,7 +15,7 @@ class Table {
 public:
 	string name;
 	Header header;
-	vector<Row> rows;
+	set<Row> rows;
 
 	Table() {}
 
@@ -25,12 +25,14 @@ public:
 			cout << "Yes(" << to_string(rows.size()) << ")";
 			if (header.size() != 0) {
 				cout << endl;
-				for (unsigned int row = 0; row < rows.size(); row++) {
+				int rowCount = 0;
+				for (Row indRow: rows) {
 					cout << " ";
 					for (unsigned int col = 0; col < header.size() - 1; col++) {
-						cout << " " << header.at(col) << "=" << rows.at(row).at(col) << ",";
+						cout << " " << header.at(col) << "=" << indRow.at(col) << ",";
 					}
-					cout << " " << header.at(header.size() - 1) << "=" << rows.at(row).at(header.size() - 1) << endl;
+					cout << " " << header.at(header.size() - 1) << "=" << indRow.at(header.size() - 1) << endl;
+					rowCount++;
 				}
 			}
 			else {
@@ -49,7 +51,7 @@ public:
 		for (unsigned int j = 0; j < row.size(); j++) {
 			currentRow.push_back(row.at(j));
 		}
-		rows.push_back(currentRow);
+		rows.insert(currentRow);;
 	}
 
 	void initializeRow(vector<DLString*>* row) {
@@ -57,7 +59,7 @@ public:
 		for (unsigned int j = 0; j < row->size(); j++) {
 			currentRow.push_back(row->at(j)->value);
 		}
-		rows.push_back(currentRow);
+		rows.insert(currentRow);
 	}
 
 	// Gets header
@@ -74,11 +76,13 @@ public:
 	// will call select on each one in the query list SK(A, B, c, D) go select(A,B) select(A,C), seleect(A,D)
 	Table select(int col, string paramToMatch) {
 		Table newRelation;
-		for (unsigned int row = 0; row < rows.size(); row++) {
-			if (rows.at(row).at(col) == paramToMatch) {
+		int row = 0;
+		for (Row indRow: rows) {
+			if (indRow.at(col) == paramToMatch) {
 				// add row to the new table
-				newRelation.rows.push_back(rows.at(row));
+				newRelation.rows.insert(indRow);
 			}
+			row++;
 		}
 		newRelation.header = header;
 		newRelation.name = name;
@@ -87,11 +91,13 @@ public:
 
 	Table select(int col1, int col2) {
 		Table newRelation;
-		for (unsigned int row = 0; row < rows.size(); row++) {
-			if (rows.at(row).at(col1) == rows.at(row).at(col2)) {
+		int rowCount = 0;
+		for (Row indRow: rows) {
+			if (indRow.at(col1) == indRow.at(col2)) {
 				// add row to the new table
-				newRelation.rows.push_back(rows.at(row));
+				newRelation.rows.insert(indRow);
 			}
+			rowCount++;
 		}
 		newRelation.header = header;
 		newRelation.name = name;
@@ -101,29 +107,44 @@ public:
 	Table project(QueryItem query) {
 		Table newRelation;
 		//newRlation has same name as previous
-
-		// init empty rows
-		for (unsigned int a = 0; a < rows.size(); a++) {
-			Row row;
-			newRelation.rows.push_back(row);
-		}
+		bool deletedCol = false;
+		newRelation.rows = rows;
 		map<string, int> seen;
 		//for loop keep the ones in the order given;
-		for (unsigned int i = 0; i < query.parameters.size(); i++) {
+		for (signed int i = (signed) query.parameters.size() - 1; i >= 0; i--) {
 			// if it is a constant erase it from the rows and header
-			if (query.parameters.at(i).find("'") == string::npos && seen.find(query.parameters.at(i)) == seen.end()) {
+			if (!(query.parameters.at(i).find("'") == string::npos) || !(seen.find(query.parameters.at(i)) == seen.end())) {
+				//int rowCount = 0;
+				//auto rowIt = std::begin(newRelation.rows);
+
+				//while (rowIt != std::end(newRelation.rows)) {
+				//	rowIt->erase(rowIt->begin() + i);
+				//		//i = i->erase(i->begin() + i);
+				//	++rowIt;
+				//}
+				set<Row> temp;
+				for (Row row : newRelation.rows) {
+					Row newRow = row;
+					newRow.erase(newRow.begin() + i);
+					temp.insert(newRow);
+				}
+				newRelation.rows = temp;
+				/*for (unsigned int j = 0; j < rows.size(); j++) {
+					newRelation.rows.at(j).push_back(rows.at(j).at(i));
+				}*/
+			}
+			// is not constant or a repeat - keep it
+			else {
 				seen[query.parameters.at(i)] = 1;
 				newRelation.header.push_back(query.parameters.at(i));
-				for (unsigned int j = 0; j < rows.size(); j++) {
-					newRelation.rows.at(j).push_back(rows.at(j).at(i));
-				}
+
 			}
 		}
 
 		// get only unique rows
-		set<Row> s(newRelation.rows.begin(), newRelation.rows.end());
-		newRelation.rows.assign(s.begin(), s.end());
-		//set<Row> s;
+		//set<Row> s(newRelation.rows.begin(), newRelation.rows.end());
+		//newRelation.rows.assign(s.begin(), s.end());
+		////set<Row> s;
 		//unsigned size = newRelation.rows.size();
 		//for (unsigned i = 0; i < size; ++i) s.insert(newRelation.rows[i]);
 		//newRelation.rows.assign(s.begin(), s.end());
@@ -238,7 +259,7 @@ public:
 		for (Row row : rows) {
 			for (Row rowToJoin : toJoin.rows) {
 				if (satisfies(row, rowToJoin, columnsToKeep)) {
-					joinResult.rows.push_back(joined(row, rowToJoin, columnJoinIndices));
+					joinResult.rows.insert(joined(row, rowToJoin, columnJoinIndices));
 				}
 			}
 		}
@@ -256,6 +277,11 @@ public:
 		Table newRelation;
 		newRelation.name = head.table;
 
+		for (unsigned int k = 0; k < header.size()/2; k++) {
+			string temp = header.at(k);
+			header.at(k) = header.at(header.size() - k - 1);
+			header.at(header.size() - k - 1) = temp;
+		}
 		// keep the schema for the headPredicate
 		for (string param : head.parameters) {
 			newRelation.header.push_back(param);
@@ -268,7 +294,7 @@ public:
 				// this should push the columns back in the right order
 				filtered.push_back(row.at(columnsToKeep.at(i).at(1)));
 			}
-			newRelation.rows.push_back(filtered);
+			newRelation.rows.insert(filtered);
 		}
 		return newRelation;
 	}
@@ -300,25 +326,24 @@ public:
 		// TODO: do I need to print "Rule Evaluation" and "Query Evaluation"???
 		// remove this if we go with the wiki's format (also this is slow) at least 0(nlogn)
 		// Get diff between vectors and print
-		std::sort(ruleTable.rows.begin(), ruleTable.rows.end());
+		/*std::sort(ruleTable.rows.begin(), ruleTable.rows.end());
 		set<Row> sRule(ruleTable.rows.begin(), ruleTable.rows.end());
-		ruleTable.rows.assign(sRule.begin(), sRule.end());
+		ruleTable.rows.insert(sRule.begin(), sRule.end());*/
 
-		std::sort(rows.begin(), rows.end());
-		std::vector<Row> diff;
+		//std::sort(rows.begin(), rows.end());
+		std::set<Row> diff;
 		std::set_difference(ruleTable.rows.begin(), ruleTable.rows.end(), rows.begin(), rows.end(),
 			std::inserter(diff, diff.begin()));
-		printRuleAdditions(diff, rule, header);
+		//printRuleAdditions(diff, rule, header);
 		// end rule printouts
 
 		int sizeBefore = rows.size();
 		for (Row row : ruleTable.rows) {
-			rows.push_back(row);
+			rows.insert(row);
 		}
 		// sort the database and delete non-unique additions
-		// sort the database and delete non-unique additions
-		set<Row> s(rows.begin(), rows.end());
-		rows.assign(s.begin(), s.end());
+		/*set<Row> s(rows.begin(), rows.end());
+		rows.assign(s.begin(), s.end());*/
 		/*set<Row> s;
 		unsigned size = rows.size();
 		for (unsigned i = 0; i < size; ++i) s.insert(rows[i]);
@@ -431,7 +456,7 @@ public:
 			stringSCC += to_string(s);
 			count++;
 		}
-		cout << "SCC: " << stringSCC << endl;
+		//cout << "SCC: " << stringSCC << endl;
 		return subset;
 	}
 

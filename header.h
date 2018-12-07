@@ -1,20 +1,23 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <set>
 
 class Header : public vector<string> {};
 // have Row and Header just be a vector of string
 class Row : public vector<string> {
-	/* needed for set comparison */
-	bool operator == (const Row& other) const {
-		for (unsigned int i = 0; i < this->size(); i++) {
-			if (!other.size() && other.at(i) == "" && this->at(i) != other.at(i)) {
-				return false;
-			}
-		}
-		return true;
-	}
 public:
+	Row() {};
+	///* needed for set comparison */
+	//bool operator == (const Row& other) const {
+	//	for (unsigned int i = 0; i < this->size(); i++) {
+	//		if (!other.size() && other.at(i) == "" && this->at(i) != other.at(i)) {
+	//			return false;
+	//		}
+	//	}
+	//	return true;
+	//}
+
 	string toString(Header header) {
 		string result = "  ";
 		for (unsigned int i = 0; i < this->size(); i++) {
